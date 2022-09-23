@@ -30,7 +30,6 @@ public class CalculationBlock
 
     public void DivideIntoBlocks()
     {
-
         if ((inputString != ""))
         {
             int i = 1;
@@ -65,7 +64,7 @@ public class CalculationBlock
                         //Console.WriteLine("(Block) Added an operator " + inputString[i].ToString());
                     }
 
-                    if (Characters.AvailableBrackets.Contains(inputString[i + 1])) // Characters.AvailableBrackets.Contains(inputString[i]) || 
+                    if (Characters.AvailableBrackets.Contains(inputString[i + 1]))
                     {
                         if (value != "")
                         {
@@ -107,7 +106,7 @@ public class CalculationBlock
             }
         }
 
-        if ((childBlocks.Count == 0) && (Characters.AvailableDigits.Contains(sValue.Last()))) // && (sValue != "")
+        if ((childBlocks.Count == 0) && (Characters.AvailableDigits.Contains(sValue.Last())))
         {
             fValue = float.Parse(sValue);
         }
@@ -177,8 +176,6 @@ public class CalculationBlock
 
         if (childBlocks.Count != 0) { fValue = childBlocks[0].fValue; }
     }
-
-
 }
 
 public class MainCalculationBlock : CalculationBlock

@@ -191,67 +191,99 @@ public class MainCalculationBlock : CalculationBlock
 
     private bool CheckInputString()
     {
-        bool res = true;
+        bool isInputValid = true;
+
+        bool ErrInvChar = false;
+        bool ErrInvFirstChar = false;
+        bool ErrDivByZero = false;
+        bool ErrMultOperators = false;
+        bool ErrMultPeriods = false;
+        bool ErrMultZeros = false;
+        bool ErrNumStartsWithZero = false;
+
         int lBracketsCount = 0;
         int rBracketsCount = 0;
 
-        foreach (char ch in inputString)
-        {
-            if (!(Characters.AvailableDigits.Contains(ch) || Characters.AvailableOperators.Contains(ch) || Characters.AvailableBrackets.Contains(ch) || (ch == '.')))
-            {
-                res = false;
-                response += "Expression contains invalid characters; ";
-            }
-        }
 
 
         if (!((inputString[0] == '-') || (inputString[0] == '(') || Characters.AvailableDigits.Contains(inputString[0])))
         {
-            res = false;
-            response += "Expression should begin with a '-', '(' or a digit; ";
+            ErrInvFirstChar = true;
         }
-
-
-        for (int i = 1; i < inputString.Length; i++)
-        {
-            if ((Characters.AvailableOperators.Contains(inputString[i - 1])) && (Characters.AvailableOperators.Contains(inputString[i])))
-            {
-                res = false;
-                response += "Expression contains two or more operators in a row; ";
-            }
-
-            if ((inputString[i - 1] == '/') && (inputString[i] == '0'))
-            {
-                res = false;
-                response += "Expression contains division by 0; ";
-            }
-
-            if ((inputString[i] == '.') && (inputString[i - 1] == '.'))
-            {
-                res = false;
-                response += "Expression contains unexpected '.'";
-            }
-        }
-
 
         for (int i = 0; i < inputString.Length; i++)
         {
             if (inputString[i] == '(') { lBracketsCount++; }
             else if (inputString[i] == ')') { rBracketsCount++; }
+
+            if (!(Characters.AvailableDigits.Contains(inputString[i]) 
+                || Characters.AvailableOperators.Contains(inputString[i]) 
+                || Characters.AvailableBrackets.Contains(inputString[i]) 
+                || (inputString[i] == '.')))
+            {
+                ErrInvChar = true;        
+            }
+
+            if (i < inputString.Length - 1)
+            {
+                if ((Characters.AvailableOperators.Contains(inputString[i])) && (Characters.AvailableOperators.Contains(inputString[i + 1])))
+                {
+                    ErrMultOperators = true;
+                }
+                if ((inputString[i] == '.') && (inputString[i + 1] == '.'))
+                {
+                    ErrMultPeriods = true;
+                }
+                if ((inputString[i] == '0') && (inputString[i + 1] == '0'))
+                {
+                    ErrMultZeros = true;
+                }
+                if ((inputString[i] == '0') && (Characters.AvailableDigits.Contains(inputString[i]) && (inputString[i] != '0')))
+                {
+                    ErrNumStartsWithZero = true;
+                }
+            }
+
+            if (i < inputString.Length - 2)
+            {
+                if ((inputString[i] == '/') 
+                    && (((inputString[i + 1] == '0') && (inputString[i + 2] != '.')) 
+                    || (inputString[i + 1] != '.')))
+                {
+                    ErrDivByZero = true;
+                }
+            }
         }
+
+
+
+        if (ErrInvChar) { response += "Expression contains invalid character(s); "; }
+        if (ErrInvFirstChar) { response += "Expression should begin with '-', '(' or a digit; "; }
+        
+        if (ErrMultOperators) { response += "Expression contains two or more operators in a row; "; }
+        if (ErrMultPeriods) { response += "Expression contains unexpected '.'"; }
+
+        if (ErrMultZeros) { response += "Expression contains two or more zeros in a row; "; }
+        if (ErrNumStartsWithZero) { response += "Numbers that are larger than or equal to 1 cant start with 0; "; }
+
+        if (ErrDivByZero) { response += "Expression contains division by 0; "; }
 
         if (lBracketsCount > rBracketsCount)
         {
             response += "Expression containts one or more unexpected '('; ";
-            res = false;
+            isInputValid = false;
         }
         else if (lBracketsCount < rBracketsCount)
         {
             response += "Expression containts one or more unexpected ')'; ";
-            res = false;
+            isInputValid = false;
         }
 
-        return res;
+
+
+        if (response != "") { isInputValid = false;  }
+
+        return isInputValid;
     }
 
     private void HealInputString()
@@ -268,16 +300,20 @@ public class MainCalculationBlock : CalculationBlock
             {
                 inputString.Insert(i, "*");
             }
+            if ((Characters.AvailableOperators.Contains(inputString[i - 1])) && (inputString[i] == '.'))
+            {
+                inputString.Insert(i, "0");
+            }
         }
     }
 
-    public void ReturnResult()
+    private void ReturnResult()
     {
         if (response == "") { Console.WriteLine(fValue); }
         else { Console.WriteLine(response); }
     }
 
-    public void ResetBlocks()
+    private void ResetBlocks()
     {
         childBlocks.Clear();
         inputString = "";
@@ -291,6 +327,8 @@ public class MainCalculationBlock : CalculationBlock
             HealInputString();
             CalcBlock();
         }
+
+        ReturnResult();
     }
 }
 
@@ -299,7 +337,6 @@ class calc
     static void Main(string[] args)
     {
         MainCalculationBlock MCBlock = new MainCalculationBlock(Console.ReadLine());
-        MCBlock.Start();
-        MCBlock.ReturnResult();
+        MCBlock.Start();  
     }
 }

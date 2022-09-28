@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 
 public static class Characters
-{
-    public static char[] AvailableOperators = new char[] { '+', '-', '*', '/' };
+{   
     public static char[] AvailableDigits = new char[] { '1', '2', '3', '4', '5', '6', '7', '8', '9', '0' };
+    public static char[] AvailableOperators = new char[] { '+', '-', '*', '/' };
     public static char[] AvailableBrackets = new char[] { '(', ')' };
 }
 
@@ -28,7 +28,33 @@ public class CalculationBlock
         this.sValue = sValue;
     }
 
-    public void DivideIntoBlocks()
+
+    protected bool IsADigit(char ch)
+    {
+        if (Characters.AvailableDigits.Contains(ch)) { return true; }
+        else { return false; }
+    }
+
+    protected bool IsAnOperator(char ch)
+    {
+        if (Characters.AvailableOperators.Contains(ch)) { return true; }
+        else { return false; }
+    }
+
+    protected bool IsABracket(char ch)
+    {
+        if (Characters.AvailableDigits.Contains(ch)) { return true; }
+        else { return false; }
+    }
+
+    protected bool IsAPeriod(char ch)
+    {
+        if (ch == '.') { return true; }
+        else { return false; }
+    }
+
+
+    private void DivideIntoBlocks()
     {
         if ((inputString != ""))
         {
@@ -47,11 +73,11 @@ public class CalculationBlock
                 }
                 else if (leftBracketsCount == rightBracketsCount)
                 {
-                    if ((Characters.AvailableDigits.Contains(inputString[i])) || (inputString[i] == '.'))
+                    if ((IsADigit(inputString[i])) || (inputString[i] == '.'))
                     {
                         value += inputString[i];
                     }
-                    else if (Characters.AvailableOperators.Contains(inputString[i]))
+                    else if (IsAnOperator(inputString[i]))
                     {
                         if (value != "")
                         {
@@ -64,7 +90,7 @@ public class CalculationBlock
                         //Console.WriteLine("(Block) Added an operator " + inputString[i].ToString());
                     }
 
-                    if (Characters.AvailableBrackets.Contains(inputString[i + 1]))
+                    if (IsABracket(inputString[i + 1]))
                     {
                         if (value != "")
                         {
@@ -91,7 +117,7 @@ public class CalculationBlock
         }
     }
 
-    protected void CastChildBlocks()
+    private void CastChildBlocks()
     {   
         if ((childBlocks.Count != 0) && (childBlocks[0].sValue == "-"))
         {
@@ -106,13 +132,13 @@ public class CalculationBlock
             }
         }
 
-        if ((childBlocks.Count == 0) && (Characters.AvailableDigits.Contains(sValue.Last())))
+        if ((childBlocks.Count == 0) && (IsADigit(sValue.Last())))
         {
             fValue = float.Parse(sValue);
         }
     }
 
-    protected void CalcChildBlocks()
+    private void CalcChildBlocks()
     {
         if (childBlocks.Count > 2)
         {
@@ -159,7 +185,7 @@ public class CalculationBlock
         }
     }
 
-    public void CalcBlock()
+    protected void CalcBlock()
     {
         //Console.WriteLine(inputString);
 
@@ -206,7 +232,7 @@ public class MainCalculationBlock : CalculationBlock
 
 
 
-        if (!((inputString[0] == '-') || (inputString[0] == '(') || Characters.AvailableDigits.Contains(inputString[0])))
+        if (!((inputString[0] == '-') || (inputString[0] == '(') || IsADigit(inputString[0])))
         {
             ErrInvFirstChar = true;
         }
@@ -216,9 +242,9 @@ public class MainCalculationBlock : CalculationBlock
             if (inputString[i] == '(') { lBracketsCount++; }
             else if (inputString[i] == ')') { rBracketsCount++; }
 
-            if (!(Characters.AvailableDigits.Contains(inputString[i]) 
-                || Characters.AvailableOperators.Contains(inputString[i]) 
-                || Characters.AvailableBrackets.Contains(inputString[i]) 
+            if (!(IsADigit(inputString[i]) 
+                || IsAnOperator(inputString[i]) 
+                || IsABracket(inputString[i]) 
                 || (inputString[i] == '.')))
             {
                 ErrInvChar = true;        
@@ -226,7 +252,7 @@ public class MainCalculationBlock : CalculationBlock
 
             if (i < inputString.Length - 1)
             {
-                if ((Characters.AvailableOperators.Contains(inputString[i])) && (Characters.AvailableOperators.Contains(inputString[i + 1])))
+                if ((IsAnOperator(inputString[i])) && (IsAnOperator(inputString[i + 1])))
                 {
                     ErrMultOperators = true;
                 }
@@ -238,7 +264,7 @@ public class MainCalculationBlock : CalculationBlock
                 {
                     ErrMultZeros = true;
                 }
-                if ((inputString[i] == '0') && (Characters.AvailableDigits.Contains(inputString[i]) && (inputString[i] != '0')))
+                if ((inputString[i] == '0') && (IsADigit(inputString[i]) && (inputString[i] != '0')))
                 {
                     ErrNumStartsWithZero = true;
                 }
@@ -247,8 +273,8 @@ public class MainCalculationBlock : CalculationBlock
             if (i < inputString.Length - 2)
             {
                 if ((inputString[i] == '/') 
-                    && (((inputString[i + 1] == '0') && (inputString[i + 2] != '.')) 
-                    || (inputString[i + 1] != '.')))
+                    && (((inputString[i + 1] == '0') && (!IsAPeriod(inputString[i + 2]))) 
+                    || (!IsAPeriod(inputString[i + 2]))))
                 {
                     ErrDivByZero = true;
                 }
@@ -292,15 +318,15 @@ public class MainCalculationBlock : CalculationBlock
 
         for (int i = 1; i < inputString.Length; i++)
         {
-            if ((Characters.AvailableDigits.Contains(inputString[i - 1])) && (inputString[i] == '('))
+            if ((IsADigit(inputString[i - 1])) && (inputString[i] == '('))
             {
                 inputString.Insert(i, "*");
             }
-            if ((Characters.AvailableDigits.Contains(inputString[i])) && (inputString[i - 1] == ')'))
+            if ((IsADigit(inputString[i])) && (inputString[i - 1] == ')'))
             {
                 inputString.Insert(i, "*");
             }
-            if ((Characters.AvailableOperators.Contains(inputString[i - 1])) && (inputString[i] == '.'))
+            if ((IsAnOperator(inputString[i - 1])) && (inputString[i] == '.'))
             {
                 inputString.Insert(i, "0");
             }

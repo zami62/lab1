@@ -273,8 +273,8 @@ public class MainCalculationBlock : CalculationBlock
             if (i < inputString.Length - 2)
             {
                 if ((inputString[i] == '/') 
-                    && (((inputString[i + 1] == '0') && (!IsAPeriod(inputString[i + 2]))) 
-                    || (!IsAPeriod(inputString[i + 2]))))
+                    && (((inputString[i + 1] == '0') 
+                    && (!IsAPeriod(inputString[i + 2])))))
                 {
                     ErrDivByZero = true;
                 }

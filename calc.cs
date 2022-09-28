@@ -43,7 +43,7 @@ public class CalculationBlock
 
     protected bool IsABracket(char ch)
     {
-        if (Characters.AvailableDigits.Contains(ch)) { return true; }
+        if (Characters.AvailableBrackets.Contains(ch)) { return true; }
         else { return false; }
     }
 
@@ -245,7 +245,7 @@ public class MainCalculationBlock : CalculationBlock
             if (!(IsADigit(inputString[i]) 
                 || IsAnOperator(inputString[i]) 
                 || IsABracket(inputString[i]) 
-                || (inputString[i] == '.')))
+                || IsAPeriod(inputString[i])))
             {
                 ErrInvChar = true;        
             }

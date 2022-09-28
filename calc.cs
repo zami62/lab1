@@ -309,7 +309,7 @@ public class MainCalculationBlock : CalculationBlock
 
     private void ReturnResult()
     {
-        if (response == "") { Console.WriteLine(fValue); }
+        if (response == "") { Console.WriteLine("=" + fValue.ToString()); }
         else { Console.WriteLine(response); }
     }
 
@@ -336,6 +336,7 @@ class calc
 {
     static void Main(string[] args)
     {
+        Console.WriteLine("Enter an expression: ");
         MainCalculationBlock MCBlock = new MainCalculationBlock(Console.ReadLine());
         MCBlock.Start();  
     }

@@ -53,6 +53,18 @@ public class CalculationBlock
         else { return false; }
     }
 
+    protected bool IsAValidFirstChar(char ch)
+    {
+        if ((ch == '-') || (ch == '(') || (ch == '.') || IsADigit(ch)) { return true; }
+        else { return false; }
+    }
+
+    protected bool IsAValidLastChar(char ch)
+    {
+        if (IsADigit(ch) || (ch == ')')) { return true; }
+        else { return false; }
+    }
+
 
     private void DivideIntoBlocks()
     {
@@ -210,9 +222,10 @@ public class MainCalculationBlock : CalculationBlock
 
     public MainCalculationBlock() { }
 
-    public MainCalculationBlock(string inputString)
+    private void GetInput()
     {
-        this.inputString = inputString;
+        Console.WriteLine("Enter an expression: ");
+        inputString = Console.ReadLine();
     }
 
     private bool CheckInputString()
@@ -221,20 +234,32 @@ public class MainCalculationBlock : CalculationBlock
 
         bool ErrInvChar = false;
         bool ErrInvFirstChar = false;
-        bool ErrDivByZero = false;
+        bool ErrInvLastChar = false;
+
+        bool ErrInvBlockFirstChar = false;
+        bool ErrInvBlockLastChar = false;
+
         bool ErrMultOperators = false;
         bool ErrMultPeriods = false;
         bool ErrMultZeros = false;
+
         bool ErrNumStartsWithZero = false;
+        bool ErrNumEndsWithPeriod = false;
+
+        bool ErrDivByZero = false;
 
         int lBracketsCount = 0;
         int rBracketsCount = 0;
 
 
-
-        if (!((inputString[0] == '-') || (inputString[0] == '(') || IsADigit(inputString[0])))
+        if (!IsAValidFirstChar(inputString[0]))
         {
             ErrInvFirstChar = true;
+        }
+
+        if (!IsAValidLastChar(inputString.Last()))
+        {
+            ErrInvLastChar = true;
         }
 
         for (int i = 0; i < inputString.Length; i++)
@@ -264,9 +289,23 @@ public class MainCalculationBlock : CalculationBlock
                 {
                     ErrMultZeros = true;
                 }
-                if ((inputString[i] == '0') && (IsADigit(inputString[i]) && (inputString[i] != '0')))
+
+                if ((inputString[i] == '0') && IsADigit(inputString[i + 1]))
                 {
                     ErrNumStartsWithZero = true;
+                }
+                if ((inputString[i] == '.') && !IsADigit(inputString[i + 1]))
+                {
+                    ErrNumEndsWithPeriod = true;
+                }
+
+                if ((inputString[i] == '(') && !IsAValidFirstChar(inputString[i + 1]))
+                {
+                    ErrInvBlockFirstChar = true;
+                }
+                if (!IsAValidFirstChar(inputString[i]) && (inputString[i + 1] == ')'))
+                {
+                    ErrInvBlockLastChar = true;
                 }
             }
 
@@ -282,29 +321,25 @@ public class MainCalculationBlock : CalculationBlock
         }
 
 
-
         if (ErrInvChar) { response += "Expression contains invalid character(s); "; }
-        if (ErrInvFirstChar) { response += "Expression should begin with '-', '(' or a digit; "; }
-        
-        if (ErrMultOperators) { response += "Expression contains two or more operators in a row; "; }
-        if (ErrMultPeriods) { response += "Expression contains unexpected '.'"; }
 
+        if (ErrInvFirstChar) { response += "Expression should begin with '-', '(' or a digit; "; }
+        if (ErrInvLastChar) { response += "Expression should end with ')' or a digit; "; }
+
+        if (ErrInvBlockFirstChar) { response += "Parenteses should begin with '-', '(' or a digit; "; }
+        if (ErrInvBlockLastChar) { response += "Parenteses should end with ')' or a digit; "; }
+
+        if (ErrMultOperators) { response += "Expression contains two or more operators in a row; "; }
+        if (ErrMultPeriods) { response += "Expression contains two or more periods in a row"; }
         if (ErrMultZeros) { response += "Expression contains two or more zeros in a row; "; }
+
         if (ErrNumStartsWithZero) { response += "Numbers that are larger than or equal to 1 cant start with 0; "; }
+        if (ErrNumEndsWithPeriod) { response += "Number cant end with a period; "; }
 
         if (ErrDivByZero) { response += "Expression contains division by 0; "; }
 
-        if (lBracketsCount > rBracketsCount)
-        {
-            response += "Expression containts one or more unexpected '('; ";
-            isInputValid = false;
-        }
-        else if (lBracketsCount < rBracketsCount)
-        {
-            response += "Expression containts one or more unexpected ')'; ";
-            isInputValid = false;
-        }
-
+        if (lBracketsCount > rBracketsCount) { response += "Expression containts one or more unexpected '('; "; }
+        else if (lBracketsCount < rBracketsCount) { response += "Expression containts one or more unexpected ')'; "; }
 
 
         if (response != "") { isInputValid = false;  }
@@ -314,23 +349,32 @@ public class MainCalculationBlock : CalculationBlock
 
     private void HealInputString()
     {
-        inputString = "(" + inputString + ")";
+        for (int i = 0; i < inputString.Length - 1; i++)
+        {            
+            if ((IsADigit(inputString[i])) && (inputString[i + 1] == '('))
+            {
+                inputString = inputString.Insert(i + 1, "*");        
+            }
+            else if ((inputString[i] == ')') && (IsADigit(inputString[i + 1]) || (inputString[i + 1] == '.')))
+            {
+                inputString = inputString.Insert(i + 1, "*");
+            }
+            else if ((inputString[i] == ')') && (inputString[i + 1] == '('))
+            {
+                inputString = inputString.Insert(i + 1, "*");
+            }
 
-        for (int i = 1; i < inputString.Length; i++)
-        {
-            if ((IsADigit(inputString[i - 1])) && (inputString[i] == '('))
+            if ((IsAnOperator(inputString[i])) && (inputString[i + 1] == '.'))
             {
-                inputString.Insert(i, "*");
+                inputString = inputString.Insert(i + 1, "0");
             }
-            if ((IsADigit(inputString[i])) && (inputString[i - 1] == ')'))
+            else if ((inputString[i] == '(') && (inputString[i + 1] == '.'))
             {
-                inputString.Insert(i, "*");
-            }
-            if ((IsAnOperator(inputString[i - 1])) && (inputString[i] == '.'))
-            {
-                inputString.Insert(i, "0");
+                inputString = inputString.Insert(i + 1, "0");
             }
         }
+
+        inputString = "(" + inputString + ")";
     }
 
     private void ReturnResult()
@@ -343,11 +387,15 @@ public class MainCalculationBlock : CalculationBlock
     {
         childBlocks.Clear();
         inputString = "";
+        fValue = 0;
+        sValue = "";
         response = "";
     }
 
     public void Start()
     {
+        GetInput();
+
         if (CheckInputString())
         {
             HealInputString();
@@ -362,8 +410,7 @@ class calc
 {
     static void Main(string[] args)
     {
-        Console.WriteLine("Enter an expression: ");
-        MainCalculationBlock MCBlock = new MainCalculationBlock(Console.ReadLine());
+        MainCalculationBlock MCBlock = new MainCalculationBlock();
         MCBlock.Start();  
     }
 }

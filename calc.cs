@@ -94,12 +94,10 @@ public class CalculationBlock
                         if (value != "")
                         {
                             childBlocks.Add(new CalculationBlock(value));
-                            //Console.WriteLine("(Block) Added a number before an operator" + value);
                             value = "";
                         }
 
                         childBlocks.Add(new CalculationBlock(inputString[i].ToString()));
-                        //Console.WriteLine("(Block) Added an operator " + inputString[i].ToString());
                     }
 
                     if (IsABracket(inputString[i + 1]))
@@ -107,7 +105,6 @@ public class CalculationBlock
                         if (value != "")
                         {
                             childBlocks.Add(new CalculationBlock(value));
-                            //Console.WriteLine("(Block) Added a number before a bracket " + value);
                             value = "";
                         }
                     }
@@ -199,8 +196,6 @@ public class CalculationBlock
 
     protected void CalcBlock()
     {
-        //Console.WriteLine(inputString);
-
         DivideIntoBlocks();
 
         CastChildBlocks();

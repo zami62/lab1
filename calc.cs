@@ -4,9 +4,46 @@ using System.Linq;
 
 public static class Characters
 {   
-    public static char[] AvailableDigits = new char[] { '1', '2', '3', '4', '5', '6', '7', '8', '9', '0' };
-    public static char[] AvailableOperators = new char[] { '+', '-', '*', '/' };
-    public static char[] AvailableBrackets = new char[] { '(', ')' };
+    public static char[] availableDigits = new char[] { '1', '2', '3', '4', '5', '6', '7', '8', '9', '0' };
+    public static char[] availableOperators = new char[] { '+', '-', '*', '/' };
+    public static char[] availableBrackets = new char[] { '(', ')' };
+
+    public static bool IsADigit(char ch)
+    {
+        if (availableDigits.Contains(ch)) { return true; }
+        else { return false; }
+    }
+
+    public static bool IsAnOperator(char ch)
+    {
+        if (availableOperators.Contains(ch)) { return true; }
+        else { return false; }
+    }
+
+    public static bool IsABracket(char ch)
+    {
+        if (availableBrackets.Contains(ch)) { return true; }
+        else { return false; }
+    }
+
+    public static bool IsAPeriod(char ch)
+    {
+        if (ch == '.') { return true; }
+        else { return false; }
+    }
+
+    public static bool IsAValidFirstChar(char ch)
+    {
+        if ((ch == '-') || (ch == '(') || (ch == '.') || IsADigit(ch)) { return true; }
+        else { return false; }
+    }
+
+    public static bool IsAValidLastChar(char ch)
+    {
+        if (IsADigit(ch) || (ch == ')')) { return true; }
+        else { return false; }
+    }
+
 }
 
 public class CalculationBlock
@@ -15,8 +52,8 @@ public class CalculationBlock
 
     protected string inputString = "";
 
-    protected int leftBracketsCount = 0;
-    protected int rightBracketsCount = 0;
+    private int leftBracketsCount = 0;
+    private int rightBracketsCount = 0;
 
     protected string sValue = "";
     protected float fValue = 0;
@@ -29,46 +66,9 @@ public class CalculationBlock
     }
 
 
-    protected bool IsADigit(char ch)
-    {
-        if (Characters.AvailableDigits.Contains(ch)) { return true; }
-        else { return false; }
-    }
-
-    protected bool IsAnOperator(char ch)
-    {
-        if (Characters.AvailableOperators.Contains(ch)) { return true; }
-        else { return false; }
-    }
-
-    protected bool IsABracket(char ch)
-    {
-        if (Characters.AvailableBrackets.Contains(ch)) { return true; }
-        else { return false; }
-    }
-
-    protected bool IsAPeriod(char ch)
-    {
-        if (ch == '.') { return true; }
-        else { return false; }
-    }
-
-    protected bool IsAValidFirstChar(char ch)
-    {
-        if ((ch == '-') || (ch == '(') || (ch == '.') || IsADigit(ch)) { return true; }
-        else { return false; }
-    }
-
-    protected bool IsAValidLastChar(char ch)
-    {
-        if (IsADigit(ch) || (ch == ')')) { return true; }
-        else { return false; }
-    }
-
-
     private void DivideIntoBlocks()
     {
-        if ((inputString != ""))
+        if (inputString != "")
         {
             int i = 1;
             string value = "";
@@ -85,11 +85,11 @@ public class CalculationBlock
                 }
                 else if (leftBracketsCount == rightBracketsCount)
                 {
-                    if ((IsADigit(inputString[i])) || (inputString[i] == '.'))
+                    if ((Characters.IsADigit(inputString[i])) || (inputString[i] == '.'))
                     {
                         value += inputString[i];
                     }
-                    else if (IsAnOperator(inputString[i]))
+                    else if (Characters.IsAnOperator(inputString[i]))
                     {
                         if (value != "")
                         {
@@ -100,7 +100,7 @@ public class CalculationBlock
                         childBlocks.Add(new CalculationBlock(inputString[i].ToString()));
                     }
 
-                    if (IsABracket(inputString[i + 1]))
+                    if (Characters.IsABracket(inputString[i + 1]))
                     {
                         if (value != "")
                         {
@@ -112,13 +112,10 @@ public class CalculationBlock
 
                 if ((inputString[i] == ')')) { rightBracketsCount++; }
 
-                if (leftBracketsCount == rightBracketsCount)
+                if ((leftBracketsCount == rightBracketsCount) && (bracketsBlock.inputString != "")) 
                 {
-                    if (bracketsBlock.inputString != "")
-                    {
-                        childBlocks.Add(bracketsBlock);
-                        bracketsBlock = new CalculationBlock();
-                    }
+                    childBlocks.Add(bracketsBlock);
+                    bracketsBlock = new CalculationBlock();
                 }
 
                 i++;
@@ -141,13 +138,21 @@ public class CalculationBlock
             }
         }
 
-        if ((childBlocks.Count == 0) && (IsADigit(sValue.Last())))
+        if ((childBlocks.Count == 0) && (Characters.IsADigit(sValue.Last())))
         {
             fValue = float.Parse(sValue);
         }
     }
 
     private void CalcChildBlocks()
+    {
+        foreach (CalculationBlock child in childBlocks)
+        {
+            child.CalcBlock();
+        }
+    }
+
+    private void CalcSelf()
     {
         if (childBlocks.Count > 2)
         {
@@ -200,12 +205,9 @@ public class CalculationBlock
 
         CastChildBlocks();
 
-        foreach (CalculationBlock child in childBlocks)
-        {
-            child.CalcBlock();
-        }
-
         CalcChildBlocks();
+
+        CalcSelf();
 
         if (childBlocks.Count != 0) { fValue = childBlocks[0].fValue; }
     }
@@ -247,12 +249,12 @@ public class MainCalculationBlock : CalculationBlock
         int rBracketsCount = 0;
 
 
-        if (!IsAValidFirstChar(inputString[0]))
+        if (!Characters.IsAValidFirstChar(inputString[0]))
         {
             ErrInvFirstChar = true;
         }
 
-        if (!IsAValidLastChar(inputString.Last()))
+        if (!Characters.IsAValidLastChar(inputString.Last()))
         {
             ErrInvLastChar = true;
         }
@@ -262,17 +264,17 @@ public class MainCalculationBlock : CalculationBlock
             if (inputString[i] == '(') { lBracketsCount++; }
             else if (inputString[i] == ')') { rBracketsCount++; }
 
-            if (!(IsADigit(inputString[i]) 
-                || IsAnOperator(inputString[i]) 
-                || IsABracket(inputString[i]) 
-                || IsAPeriod(inputString[i])))
+            if (!(Characters.IsADigit(inputString[i]) 
+                || Characters.IsAnOperator(inputString[i]) 
+                || Characters.IsABracket(inputString[i]) 
+                || Characters.IsAPeriod(inputString[i])))
             {
                 ErrInvChar = true;        
             }
 
             if (i < inputString.Length - 1)
             {
-                if ((IsAnOperator(inputString[i])) && (IsAnOperator(inputString[i + 1])))
+                if ((Characters.IsAnOperator(inputString[i])) && (Characters.IsAnOperator(inputString[i + 1])))
                 {
                     ErrMultOperators = true;
                 }
@@ -285,20 +287,20 @@ public class MainCalculationBlock : CalculationBlock
                     ErrMultZeros = true;
                 }
 
-                if ((inputString[i] == '0') && IsADigit(inputString[i + 1]))
+                if ((inputString[i] == '0') && Characters.IsADigit(inputString[i + 1]))
                 {
                     ErrNumStartsWithZero = true;
                 }
-                if ((inputString[i] == '.') && !IsADigit(inputString[i + 1]))
+                if ((inputString[i] == '.') && !Characters.IsADigit(inputString[i + 1]))
                 {
                     ErrNumEndsWithPeriod = true;
                 }
 
-                if ((inputString[i] == '(') && !IsAValidFirstChar(inputString[i + 1]))
+                if ((inputString[i] == '(') && !Characters.IsAValidFirstChar(inputString[i + 1]))
                 {
                     ErrInvBlockFirstChar = true;
                 }
-                if (!IsAValidFirstChar(inputString[i]) && (inputString[i + 1] == ')'))
+                if (!Characters.IsAValidLastChar(inputString[i]) && (inputString[i + 1] == ')'))
                 {
                     ErrInvBlockLastChar = true;
                 }
@@ -308,7 +310,7 @@ public class MainCalculationBlock : CalculationBlock
             {
                 if ((inputString[i] == '/') 
                     && (((inputString[i + 1] == '0') 
-                    && (!IsAPeriod(inputString[i + 2])))))
+                    && (!Characters.IsAPeriod(inputString[i + 2])))))
                 {
                     ErrDivByZero = true;
                 }
@@ -346,11 +348,11 @@ public class MainCalculationBlock : CalculationBlock
     {
         for (int i = 0; i < inputString.Length - 1; i++)
         {            
-            if ((IsADigit(inputString[i])) && (inputString[i + 1] == '('))
+            if ((Characters.IsADigit(inputString[i])) && (inputString[i + 1] == '('))
             {
                 inputString = inputString.Insert(i + 1, "*");        
             }
-            else if ((inputString[i] == ')') && (IsADigit(inputString[i + 1]) || (inputString[i + 1] == '.')))
+            else if ((inputString[i] == ')') && (Characters.IsADigit(inputString[i + 1]) || (inputString[i + 1] == '.')))
             {
                 inputString = inputString.Insert(i + 1, "*");
             }
@@ -359,7 +361,7 @@ public class MainCalculationBlock : CalculationBlock
                 inputString = inputString.Insert(i + 1, "*");
             }
 
-            if ((IsAnOperator(inputString[i])) && (inputString[i + 1] == '.'))
+            if ((Characters.IsAnOperator(inputString[i])) && (inputString[i + 1] == '.'))
             {
                 inputString = inputString.Insert(i + 1, "0");
             }
